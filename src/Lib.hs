@@ -48,7 +48,7 @@ import           Data.Text                    (pack, unpack)
 import           Data.Time.Clock              (UTCTime, getCurrentTime)
 import           Data.Time.Format             (defaultTimeLocale, formatTime)
 import           Database.MongoDB
-import           GHC.Generics
+import           GHC.Generics hiding (MetaData) 
 import           Network.HTTP.Client          (defaultManagerSettings,
                                                newManager)
 import           Network.Wai
@@ -136,7 +136,7 @@ import           UseHaskellAPI
 -- function simply perfroms a loop with a 5 second delay, outputting a warning to the log on each pass.
 startApp :: IO ()    -- set up wai logger for service to output apache style logging for rest calls
 startApp = withLogging $ \ aplogger -> do
-  warnLog "Starting use-haskell."
+  warnLog "Starting database-service."
 
   forkIO $ taskScheduler 5
 
@@ -171,6 +171,7 @@ server :: Server API
 server = loadEnvironmentVariable
     :<|> getREADME
     :<|> storeMessage
+    :<|> storeMetaData
     :<|> searchMessage
     :<|> performRESTCall
 
@@ -253,6 +254,7 @@ server = loadEnvironmentVariable
     -- advantage of not having to do any database configuration - we can start writing data into the data store
     -- immediately. Note how we extract the parameter elements directly in the method definition via pattern
     -- matching. nice. Ps. '_' means we don't care what value is.
+    
     storeMessage :: Message -> Handler Bool
     storeMessage msg@(Message key _) = liftIO $ do
       warnLog $ "Storing message under key " ++ key ++ "."
@@ -263,6 +265,13 @@ server = loadEnvironmentVariable
       withMongoDbConnection $ upsert (select ["name" =: key] "MESSAGE_RECORD") $ toBSON msg
 
       return True  -- as this is a simple demo I'm not checking anything
+
+    storeMetaData :: MetaData -> Handler Bool
+    storeMetaData msg@(MetaData key a b) = liftIO $ do
+      warnLog $ "Storing meta data for repository under key" ++ key ++ "."
+      withMongoDbConnection $ upsert (select ["url" =: key] "Meta_Data") $ toBSON msg
+      return True
+
 
     searchMessage :: Maybe String -> Handler [Message]
     searchMessage (Just key) = liftIO $ do
@@ -428,7 +437,7 @@ mongoDbPort = defEnv "MONGODB_PORT" read 27017 False -- 27017 is the default mon
 
 -- | The name of the mongoDB database that devnostics-rest uses to store and access data
 mongoDbDatabase :: IO String
-mongoDbDatabase = defEnv "MONGODB_DATABASE" id "myhaskelldb" True
+mongoDbDatabase = defEnv "MONGODB_DATABASE" id "group2-database" True
 
 -- | Determines log reporting level. Set to "DEBUG", "WARNING" or "ERROR" as preferred. Loggin is
 -- provided by the hslogger library.
