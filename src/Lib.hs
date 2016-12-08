@@ -172,6 +172,7 @@ server = loadEnvironmentVariable
     :<|> getREADME
     :<|> storeMessage
     :<|> storeMetaData
+    :<|> getLastCommitDetails
     :<|> searchMessage
     :<|> performRESTCall
 
@@ -272,11 +273,27 @@ server = loadEnvironmentVariable
       withMongoDbConnection $ upsert (select ["url" =: key] "Meta_Data") $ toBSON msg
       return True
 
+    -- API for getting last commit hash 
+    getLastCommitDetails :: Maybe String -> Handler [LastCommitDetails]
+    getLastCommitDetails (Just key) = liftIO $ do
+      warnLog $ "Searching for value for url: " ++ key
+      getData ["url" =: key] "Meta_Data" $ return . genLCD . genMetaData 
+     
+     where genLCD = DL.map (\m -> LastCommitDetails (url m) (last_commit_hash m)) 
+           genMetaData = catMaybes . DL.map (\ b -> fromBSON b :: Maybe MetaData)
+	   getData f s fn = withMongoDbConnection $ find (select f s) >>= drainCursor >>= fn
 
+
+    getLastCommitDetails Nothing = liftIO $ do
+      warnLog $ "No key for searching."
+      return $ ([] :: [LastCommitDetails])
+
+
+    --sample search db api
     searchMessage :: Maybe String -> Handler [Message]
     searchMessage (Just key) = liftIO $ do
       warnLog $ "Searching for value for key: " ++ key
-
+      
       -- Find the relevant documents from the DB, take the returned data records and convert the relevant data to
       -- ResponseData records, eliminating any failures to convert, compacting to a returned simple array
       -- done in fewer lines than it takes to describe (and with fully idomatic Haskell, perhaps a single line of code).
