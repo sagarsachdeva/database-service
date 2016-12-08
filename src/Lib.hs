@@ -149,7 +149,7 @@ startApp = withLogging $ \ aplogger -> do
 
 taskScheduler :: Int -> IO ()
 taskScheduler delay = do
-  warnLog $ "Task scheduler operating."
+  --warnLog $ "Task scheduler operating."
 
   threadDelay $ delay * 1000000
   taskScheduler delay -- tail recursion
@@ -267,9 +267,9 @@ server = loadEnvironmentVariable
       return True  -- as this is a simple demo I'm not checking anything
 
     storeMetaData :: MetaData -> Handler Bool
-    storeMetaData msg@(MetaData key a b) = liftIO $ do
-      warnLog $ "Storing meta data for repository under key" ++ key ++ "."
-      withMongoDbConnection $ upsert (select ["url" =: key] "Meta_Data") $ toBSON msg
+    storeMetaData msg@(MetaData _id a b) = liftIO $ do
+      warnLog $ "Storing meta data for repository under key" ++ _id ++ "."
+      withMongoDbConnection $ upsert (select ["_id" =: _id] "Meta_Data") $ toBSON msg
       return True
 
 
