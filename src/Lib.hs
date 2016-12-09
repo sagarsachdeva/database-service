@@ -173,6 +173,7 @@ server = loadEnvironmentVariable
     :<|> storeMessage
     :<|> storeMetaData
     :<|> getLastCommitDetails
+    :<|> storeComplexity
     :<|> searchMessage
     :<|> performRESTCall
 
@@ -273,6 +274,20 @@ server = loadEnvironmentVariable
       withMongoDbConnection $ upsert (select ["_id" =: _id] "Meta_Data") $ toBSON msg
       return True
 
+    storeComplexity :: RepoComplexity -> Handler Bool
+    storeComplexity msg@(RepoComplexity _id complexity) = liftIO $ do
+      warnLog $ "Storing complexity for repository under key" ++ _id ++ "."
+      withMongoDbConnection $ do
+        docs <- find (select ["_id" =: _id] "Meta_Data") >>= drainCursor        
+        let existingRecord = fromBSON $ head docs :: Maybe MetaData
+        let genRecord = RepoMetrics (rm_url existingRecord) (rm_no_of_commits existingRecord) (rm_last_commit_hash existingRecord) complexity
+        upsert (select ["_id" =: _id] "Meta_Data") $ toBSON genRecord
+        return True
+
+    --storeComplexity Nothing = liftIO $ do
+      --warnLog $ "No key for searching."
+      --return False
+    
     -- API for getting last commit hash 
     getLastCommitDetails :: Maybe String -> Handler [LastCommitDetails]
     getLastCommitDetails (Just key) = liftIO $ do
