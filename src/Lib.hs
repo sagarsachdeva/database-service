@@ -280,8 +280,8 @@ server = loadEnvironmentVariable
       withMongoDbConnection $ do
         docs <- find (select ["_id" =: _id] "Meta_Data") >>= drainCursor        
         let existingRecord = fromBSON $ head docs :: Maybe MetaData
-        let genRecord = RepoMetrics (rm_url existingRecord) (rm_no_of_commits existingRecord) (rm_last_commit_hash existingRecord) complexity
-        upsert (select ["_id" =: _id] "Meta_Data") $ toBSON genRecord
+        --let genRecord = RepoMetrics (rm_url existingRecord) (rm_no_of_commits existingRecord) (rm_last_commit_hash existingRecord) complexity
+        --upsert (select ["_id" =: _id] "Meta_Data") $ toBSON genRecord
         return True
 
     --storeComplexity Nothing = liftIO $ do
