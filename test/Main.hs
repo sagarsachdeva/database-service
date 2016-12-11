@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes      #-}
+{-# LANGUAGE QuasiQuotes       #-}
 
 module Main where
 
@@ -23,7 +23,7 @@ module Main where
     describe "GET /searchMessage name is null" $ do
       it "responds with searchMessage" $ do
         get "/searchMessage?name=\"\"" `shouldRespondWith` "[]" {matchStatus = 200}
-    --test case for sample search message with key ecky stored from previous case 
+    --test case for sample search message with key ecky stored from previous case
     describe "GET /searchMessage?name=ecky" $ do
       it "responds with searchMessage" $ do
         get "/searchMessage?name=ecky" `shouldRespondWith` "[{\"name\":\"ecky\",\"message\":\"mess\"}]" {matchStatus = 200}
