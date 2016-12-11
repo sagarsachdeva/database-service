@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Lib
+  exposed-modules:     MyLib
                      , RestClient
   build-depends:       base >= 4.7 && < 5
                      , aeson
@@ -47,14 +47,39 @@ executable database-service-exe
                      , database-service
   default-language:    Haskell2010
 
-test-suite database-service-test
-  type:                exitcode-stdio-1.0
-  hs-source-dirs:      test
-  main-is:             Spec.hs
-  build-depends:       base
-                     , database-service
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  default-language:    Haskell2010
+-- test-suite database-service-test
+--   type:                exitcode-stdio-1.0
+--   hs-source-dirs:      test
+--   main-is:             Spec.hs
+--   build-depends:       base
+--                      , database-service
+--   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+--   default-language:    Haskell2010
+
+test-suite spec
+  Type:                exitcode-stdio-1.0
+  Default-Language:    Haskell2010
+  Hs-Source-Dirs:      test
+  ghc-options:         -Wall -W -Werror
+  main-is:             Main.hs
+  -- main-is:             src/Lib.hs
+  -- test-modules:     Lib
+  Build-Depends:       base
+                     , hspec
+                     , hspec-wai
+                     , hspec-wai-json
+                     , bson-generic
+                     , warp
+                     , wai
+                     , scotty
+                     , bytestring
+                     , case-insensitive
+                     , wai-extra
+                     , http-types
+                     , regex-tdfa
+                     , aeson
+                     , use-haskell
+                    --  , use-haskell-api
 
 source-repository head
   type:     git

@@ -31,4 +31,4 @@ __Docker Compose__
 
 When you want to run a Docker service along with other services such as a Database, or when you want to run a set of services together, then use a docker-compose.yml file.
 
-I have added a docker-compose.yml file that includes a mongo db config. To run, ensure docker build in enabled in stack.yaml, do a stack build, a stack image container, and then start the system with 'docker-compose up'. The server will launch, as will a mongodb instance. you are now fully up and running.
+I have added a docker-compose.yml file that includes a mongo db config. To run, ensure docker build in enabled in stack.yaml, do a stack build, a stack image container, and then start the system with 'docker-compose up'. The server will launch, as will a mongodb instance. you are now fully up and running.# dataservice_api

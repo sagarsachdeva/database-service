@@ -22,8 +22,9 @@
 -- particular name (for example Lib) sits within a .hs file of the same name (eg. Lib.hs). The module statement is of
 -- the form `module MODULE_NAME (EXPORTED_FUNCTIONS) where`. Everything following this is part of the module. There are
 -- no brackets or any other syntax to worry about.
-module Lib
+module MyLib
     ( startApp
+    , app
     ) where
 
 -- | Imports work like most other languages and are essentially library includes. The functions of the lirbary become
@@ -48,7 +49,7 @@ import           Data.Text                    (pack, unpack)
 import           Data.Time.Clock              (UTCTime, getCurrentTime)
 import           Data.Time.Format             (defaultTimeLocale, formatTime)
 import           Database.MongoDB
-import           GHC.Generics hiding (MetaData) 
+import           GHC.Generics hiding (MetaData)
 import           Network.HTTP.Client          (defaultManagerSettings,
                                                newManager)
 import           Network.Wai
@@ -256,7 +257,7 @@ server = loadEnvironmentVariable
     -- advantage of not having to do any database configuration - we can start writing data into the data store
     -- immediately. Note how we extract the parameter elements directly in the method definition via pattern
     -- matching. nice. Ps. '_' means we don't care what value is.
-    
+
     storeMessage :: Message -> Handler Bool
     storeMessage msg@(Message key _) = liftIO $ do
       warnLog $ "Storing message under key " ++ key ++ "."
@@ -278,7 +279,7 @@ server = loadEnvironmentVariable
     storeComplexity msg@(RepoComplexity _id complexity) = liftIO $ do
       warnLog $ "Storing complexity for repository under key" ++ _id ++ "."
       withMongoDbConnection $ do
-        docs <- find (select ["_id" =: _id] "Meta_Data") >>= drainCursor        
+        docs <- find (select ["_id" =: _id] "Meta_Data") >>= drainCursor
         let existingRecord = fromBSON $ head docs :: Maybe MetaData
         --let genRecord = RepoMetrics (rm_url existingRecord) (rm_no_of_commits existingRecord) (rm_last_commit_hash existingRecord) complexity
         --upsert (select ["_id" =: _id] "Meta_Data") $ toBSON genRecord
@@ -287,14 +288,14 @@ server = loadEnvironmentVariable
     --storeComplexity Nothing = liftIO $ do
       --warnLog $ "No key for searching."
       --return False
-    
-    -- API for getting last commit hash 
+
+    -- API for getting last commit hash
     getLastCommitDetails :: Maybe String -> Handler [LastCommitDetails]
     getLastCommitDetails (Just key) = liftIO $ do
       warnLog $ "Searching for value for url: " ++ key
-      getData ["url" =: key] "Meta_Data" $ return . genLCD . genMetaData 
-     
-     where genLCD = DL.map (\m -> LastCommitDetails (url m) (last_commit_hash m)) 
+      getData ["url" =: key] "Meta_Data" $ return . genLCD . genMetaData
+
+     where genLCD = DL.map (\m -> LastCommitDetails (url m) (last_commit_hash m))
            genMetaData = catMaybes . DL.map (\ b -> fromBSON b :: Maybe MetaData)
 	   getData f s fn = withMongoDbConnection $ find (select f s) >>= drainCursor >>= fn
 
@@ -308,7 +309,7 @@ server = loadEnvironmentVariable
     searchMessage :: Maybe String -> Handler [Message]
     searchMessage (Just key) = liftIO $ do
       warnLog $ "Searching for value for key: " ++ key
-      
+
       -- Find the relevant documents from the DB, take the returned data records and convert the relevant data to
       -- ResponseData records, eliminating any failures to convert, compacting to a returned simple array
       -- done in fewer lines than it takes to describe (and with fully idomatic Haskell, perhaps a single line of code).
@@ -493,7 +494,3 @@ defEnv env fn def doWarn = lookupEnv env >>= \ e -> case e of
         when doWarn (doLog warningM $ "Environment variable: " ++ env ++
                                       " is not set. Defaulting to " ++ (show def))
         return def
-
-
-
-
