@@ -78,6 +78,7 @@ test-suite spec
                      , http-types
                      , regex-tdfa
                      , aeson
+                     , database-service
                      --, use-haskell
                     --  , use-haskell-api
 

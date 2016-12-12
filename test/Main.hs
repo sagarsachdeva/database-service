@@ -17,7 +17,7 @@ module Main where
     --test case for sample storage message
     describe "POST /storeMessage true" $ do
       it "responds with storeMessage" $ do
-        post "/storeMessage" [json|{name:"ecky", message:"mess"}|] `shouldRespondWith` "true%"
+        post "/storeMessage" [json|{name:"ecky", message:"mess"}|] `shouldRespondWith` "true%" {matchHeaders = ["Content-Type" <:> "application/json"]}
 
     --test case for sample searchMessage, when search null message should return empty list
     describe "GET /searchMessage name is null" $ do
@@ -31,7 +31,7 @@ module Main where
     --test case for storeMetaData API
     describe "POST /storeMetaData true" $ do
       it "responds with storeMetaData null" $ do
-        post "/storeMetaData" [json|{url:"www.storeMetaDataTest.com", no_of_commits:"15",last_commit_hash:"HESBDGADHBSD" }|] `shouldRespondWith` "true%" {matchStatus = 200}
+        post "/storeMetaData" [json|{url:"www.storeMetaDataTest.com", no_of_commits:"15",last_commit_hash:"HESBDGADHBSD" }|] `shouldRespondWith` "true%" {matchHeaders = ["Content-Type" <:> "application/json"]}
 
     --test case for getLastCommitDetails, when get url is null should return empty
     describe "GET /getLastCommitDetails url is null" $ do
