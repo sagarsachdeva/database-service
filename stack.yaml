@@ -18,7 +18,7 @@
 resolver: lts-7.10
 
 docker:
-  enable: false # warning!
+  enable: true # warning!
 
 # stack image container
 image:
