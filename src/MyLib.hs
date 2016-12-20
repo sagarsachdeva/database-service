@@ -247,13 +247,15 @@ server = loadEnvironmentVariable
       withMongoDbConnection $ do
         docs <- find (select ["_id" =: _id] "Meta_Data") >>= drainCursor
         let existingRecord = fromBSON $ head docs :: Maybe MetaData
-        --let genRecord = RepoMetrics (rm_url existingRecord) (rm_no_of_commits existingRecord) (rm_last_commit_hash existingRecord) complexity
-        --upsert (select ["_id" =: _id] "Meta_Data") $ toBSON genRecord
-        return True
-
-    --storeComplexity Nothing = liftIO $ do
-      --warnLog $ "No key for searching."
-      --return False
+        case existingRecord of 
+          Nothing -> return False
+          Just existingRecord' -> do
+            let genRecord = RepoMetrics (url existingRecord') 
+                                        (no_of_commits existingRecord')
+                                        (last_commit_hash existingRecord')
+                                        complexity
+            upsert (select ["_id" =: _id] "Meta_Data") $ toBSON genRecord
+            return True
 
     -- API for getting last commit hash
     getLastCommitDetails :: Maybe String -> Handler [LastCommitDetails]
