@@ -1,11 +1,3 @@
--- This file is commented extensively for non-haskell programmers
-
--- | These are language extensions. Haskell has a great many language
--- extensions but in practice you do not need to knwo much about them. If you
--- use a library that needs them, then the library documentation will tell you which
--- extensions you neeed to include. If you try to write code that needs particular extensions,
--- then the haskell compiler is smart enough typically to be able to suggest which extensions
--- you should switch on by including an entry here.
 
 {-# LANGUAGE DataKinds            #-}
 {-# LANGUAGE DeriveAnyClass       #-}
@@ -113,29 +105,7 @@ import           UseHaskellAPI
 -- called to start the application (in fact there is a main function in the file ../app/Main.hs, which is the entry
 -- point to the executable, but by convention, it calls startApp in this file. startApp in turn calls a function `app`
 -- defined below.
---
--- startApp is defind below on two lines. The first line is a type definition. It states that startApp returns no value
--- (denoted by `()`), but performs Input/Output. Haskell programmes are divided into code that performs I/O and code
--- that does not. The separation is very useful because I/O bound code can return different results even when passed the
--- same parameters (think about it) but non-I/O code will always return the same values for the same parameters. This
--- means we can reason about the correctness of non-I/O code more rigourously, and so the distinction is
--- worthwhile. However, the mixing of I/O and non-I/O code is one of the key problems beginning Haskell programmers have
--- with development of systems. If one fails to annotate type signatures correctly with `IO`, or write IO code
--- incorrectly, the type errors that the compiler generates are quite hard to decypher untill you understand how IO code
--- works. Firtunately its quite simple, and we shall explain below in function definitions.
---
--- A C++, Java or C programmer (amongst others) is used to a formatting of a function or method call of the form `A (X,
--- Y, Z)` where X, Y and Z are parameters passed to the execution of A. Haskell does not use the brackets, such that the
--- app function is defined entirely as a call to the serve function, passing it api and server. Note that these
--- parameters and both functions. In Haskell you can treat functions in an equivalent way to data.
---
--- Note that I have modified the standard implementation of startApp to include logging support, which is explained the
--- the text accompanying the function `withLogging` towards the end of this file.
---
--- I have added a second scheduled thread tot he startApp function to demonstrate how one can create a mutithteaded
--- server. The taskScheduler function is launched before teh startApp function enters its rest loop. The taskScheduler
--- function simply perfroms a loop with a 5 second delay, outputting a warning to the log on each pass.
-startApp :: IO ()    -- set up wai logger for service to output apache style logging for rest calls
+
 startApp = withLogging $ \ aplogger -> do
   warnLog "Starting database-service."
 
@@ -261,13 +231,9 @@ server = loadEnvironmentVariable
     storeMessage :: Message -> Handler Bool
     storeMessage msg@(Message key _) = liftIO $ do
       warnLog $ "Storing message under key " ++ key ++ "."
-
-      -- upsert creates a new record if the identified record does not exist, or if
-      -- it does exist, it updates the record with the passed document content
-      -- As you can see, this takes a single line of code
       withMongoDbConnection $ upsert (select ["name" =: key] "MESSAGE_RECORD") $ toBSON msg
 
-      return True  -- as this is a simple demo I'm not checking anything
+      return True
 
     storeMetaData :: MetaData -> Handler Bool
     storeMetaData msg@(MetaData _id a b) = liftIO $ do

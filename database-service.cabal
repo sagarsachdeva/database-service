@@ -80,7 +80,7 @@ test-suite spec
                      , aeson
                      , database-service
                      --, use-haskell
-                    --  , use-haskell-api
+                     , database-service-api
 
 source-repository head
   type:     git
