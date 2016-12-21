@@ -144,6 +144,7 @@ server = loadEnvironmentVariable
     :<|> storeMessage
     :<|> storeMetaData
     :<|> getLastCommitDetails
+    :<|> getRepoMetrics
     :<|> storeComplexity
     :<|> searchMessage
     :<|> performRESTCall
@@ -247,9 +248,9 @@ server = loadEnvironmentVariable
       withMongoDbConnection $ do
         docs <- find (select ["_id" =: _id] "Meta_Data") >>= drainCursor
         let existingRecord = fromBSON $ head docs :: Maybe MetaData
-        case existingRecord of 
+        case existingRecord of
           Nothing -> return False
-          Just (MetaData u n l) -> do                     
+          Just (MetaData u n l) -> do
             upsert (select ["_id" =: _id] "Meta_Data") $ toBSON $ RepoMetrics u n l complexity
             return True
 
@@ -268,6 +269,20 @@ server = loadEnvironmentVariable
       warnLog $ "No key for searching."
       return $ ([] :: [LastCommitDetails])
 
+    --API for get repository metrics
+    getRepoMetrics :: Maybe String -> Handler [RepoMetrics]
+    getRepoMetrics (Just key) = liftIO $ do
+      warnLog $ "Searching for value for url: " ++ key
+      getData ["url" =: key] "Meta_Data" $ return . genLCD . genMetaData
+
+     where genLCD = DL.map (\m -> RepoMetrics (url m) (no_of_commits m) (last_commit_hash m) (complexity m))
+           genMetaData = catMaybes . DL.map (\ b -> fromBSON b :: Maybe RepoMetrics)
+	   getData f s fn = withMongoDbConnection $ find (select f s) >>= drainCursor >>= fn
+
+
+    getRepoMetrics Nothing = liftIO $ do
+      warnLog $ "No key for searching."
+      return $ ([] :: [RepoMetrics])
 
     --sample search db api
     searchMessage :: Maybe String -> Handler [Message]
