@@ -65,7 +65,7 @@ import           System.Log.Handler           (setFormatter)
 import           System.Log.Handler.Simple
 import           System.Log.Handler.Syslog
 import           System.Log.Logger
-import           UseHaskellAPI
+import           UseHaskellAPI                (API, MetaData(..), RepoMetrics(..), Message(..), ResponseData(..), LastCommitDetails(..), RepoComplexity(..))
 
 -- | The Servant library has a very elegant model for defining a REST API. We shall demonstrate here. First, we shall
 -- define the data types that will be passed in the REST calls. We will define a simple data type that passes some data
@@ -283,12 +283,8 @@ server = loadEnvironmentVariable
         let existingRecord = fromBSON $ head docs :: Maybe MetaData
         case existingRecord of 
           Nothing -> return False
-          Just existingRecord' -> do
-            let genRecord = RepoMetrics (url existingRecord') 
-                                        (no_of_commits existingRecord')
-                                        (last_commit_hash existingRecord')
-                                        complexity
-            upsert (select ["_id" =: _id] "Meta_Data") $ toBSON genRecord
+          Just (MetaData u n l) -> do                     
+            upsert (select ["_id" =: _id] "Meta_Data") $ toBSON $ RepoMetrics u n l complexity
             return True
 
     -- API for getting last commit hash
@@ -297,7 +293,7 @@ server = loadEnvironmentVariable
       warnLog $ "Searching for value for url: " ++ key
       getData ["url" =: key] "Meta_Data" $ return . genLCD . genMetaData
 
-     where genLCD = DL.map (\m -> LastCommitDetails (url m) (last_commit_hash m))
+     where genLCD = DL.map (\(MetaData u n l) -> LastCommitDetails u l)
            genMetaData = catMaybes . DL.map (\ b -> fromBSON b :: Maybe MetaData)
 	   getData f s fn = withMongoDbConnection $ find (select f s) >>= drainCursor >>= fn
 
