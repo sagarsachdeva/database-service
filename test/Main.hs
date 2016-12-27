@@ -106,6 +106,12 @@ module Main where
     describe "GET /searchMessage name is null" $ do
       it "responds with searchMessage" $ do
         get "/searchMessage?name=\"\"" `shouldRespondWith` "[]" {matchStatus = 200}
+
+    --test case for sample searchMessage, when search not existed message should return empty list
+    describe "GET /searchMessage name is null" $ do
+      it "responds with searchMessage" $ do
+        get "/searchMessage?name=notexit" `shouldRespondWith` "[]" {matchStatus = 200}
+
     --test case for sample search message with key ecky stored from previous case
     describe "GET /searchMessage?name=ecky" $ do
       it "responds with searchMessage" $ do
@@ -117,18 +123,23 @@ module Main where
         let postJson p = Test.Hspec.Wai.request methodPost p [
                   (hContentType, "application/json;charset=utf-8")
                 ]
-        (postJson "/storeMetaData" $ encode $ toJSON $ ResonseMetadata "www.storeMetaDataTest.com" "15" "HESBDGADHBSD") `shouldRespondWith` "true" {matchHeaders = ["Content-Type" <:> "application/json"]}
+        (postJson "/storeMetaData" $ encode $ toJSON $ ResonseMetadata "https://github.com/sagarsachdeva/database-service" "15" "HESBDGADHBSD") `shouldRespondWith` "true" {matchHeaders = ["Content-Type" <:> "application/json"]}
 
     --test case for getLastCommitDetails, when get url is null should return empty
     describe "GET /getLastCommitDetails url is null" $ do
       it "responds with getLastCommitDetails" $ do
         get "/getLastCommitDetails?url=\"\"" `shouldRespondWith` "[]" {matchStatus = 200}
 
+    --test case for getLastCommitDetails, when get url is not stored in dbs should return empty
+    describe "GET /getLastCommitDetails url is null" $ do
+      it "responds with getLastCommitDetails" $ do
+        get "/getLastCommitDetails?url=notextes" `shouldRespondWith` "[]" {matchStatus = 200}
+
+
     --test case for getLastCommitDetails, when get url is the value stored from the last test case
     describe "GET /getLastCommitDetails url is www.storeMetaDataTest.com" $ do
       it "responds with getLastCommitDetails" $ do
-        get "/getLastCommitDetails?url=www.storeMetaDataTest.com" `shouldRespondWith` "[{\"last_commit_hash_value\":\"HESBDGADHBSD\",\"commit_url\":\"www.storeMetaDataTest.com\"}]" {matchStatus = 200}
-
+        get "/getLastCommitDetails?url=https://github.com/sagarsachdeva/database-service" `shouldRespondWith` "[{\"last_commit_hash_value\":\"HESBDGADHBSD\",\"commit_url\":\"https://github.com/sagarsachdeva/database-service\"}]" {matchStatus = 200}
 
     --test case for storeMetaData API
     describe "POST /storeComplexity true" $ do
@@ -137,3 +148,18 @@ module Main where
                   (hContentType, "application/json;charset=utf-8")
                 ]
         (postJson "/storeComplexity" $ encode $ toJSON $ ResonseComplexity "https://github.com/sagarsachdeva/database-service" "10") `shouldRespondWith` "true" {matchHeaders = ["Content-Type" <:> "application/json"]}
+
+    --test case for getRepoMetrics, when get url is null should return empty
+    describe "GET /getRepoMetrics url is null" $ do
+      it "responds with getRepoMetrics" $ do
+        get "/getRepoMetrics?url=\"\"" `shouldRespondWith` "[]" {matchStatus = 200}
+
+    --test case for getRepoMetrics, when get url is not stored in dbs should return empty
+    describe "GET /getRepoMetrics url is null" $ do
+      it "responds with getRepoMetrics" $ do
+        get "/getRepoMetrics?url=notextes" `shouldRespondWith` "[]" {matchStatus = 200}
+
+    --test case for getRepoMetrics, when get url is the value stored from the last test case
+    describe "GET /getRepoMetrics url is https://github.com/sagarsachdeva/database-service" $ do
+      it "responds with getRepoMetrics" $ do
+        get "/getRepoMetrics?url=https://github.com/sagarsachdeva/database-service" `shouldRespondWith` "[{\"url\":\"https://github.com/sagarsachdeva/database-service\",\"last_commit_hash\":\"HESBDGADHBSD\",\"complexity\":\"10\",\"no_of_commits\":\"15\"}]" {matchStatus = 200}
